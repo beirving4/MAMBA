@@ -1,27 +1,26 @@
 # Put Universe MAchine Relations 
 from dataclasses import dataclass, field, InitVar
-from typing import ClassVar
-from constants import *
+# from typing import ClassVar
  
 
-import numpy as np
-import numpy.typing as npt
-import astropy.units as u
-import astropy.cosmology.units as cu
-import astropy.cosmology
+# import numpy as np
+# import numpy.typing as npt
+# import astropy.units as u
+# import astropy.cosmology.units as cu
+# import astropy.cosmology
 
 # Type Hinting Help for Debugging 
-from typing import Type, List, Optional, Tuple, Union, Dict
+# from typing import Type, List, Optional, Tuple, Union, Dict
+#
+# import ytree
 
-import ytree
-
-from cosmological import Cosmology 
+# from cosmological import Cosmology 
 
 
 # Cooling Rate Considerations that will be passed to halo class 
 @dataclass
 class CoolingModel: 
-    rate: 
+    rate: float 
     
     
     # Get Cooling Function 

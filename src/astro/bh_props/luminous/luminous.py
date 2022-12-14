@@ -1,9 +1,9 @@
+# Store Annotations as String for Future Call Outs 
+from __future__ import annotations
+
 # Put obersvational Fits in here 
 import warnings
 warnings.filterwarnings("ignore")
-
-# Store Annotations as String for Future Call Outs 
-from __future__ import annotations
 
 # Import Libraries 
 import pdb, sys, os

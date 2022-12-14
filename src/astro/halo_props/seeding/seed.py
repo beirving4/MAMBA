@@ -8,7 +8,8 @@ import numpy.typing as npt
 from copy import copy
 
 # from virial import VirialProperties 
-from galactic import GalacticProperties 
+from ..stellar.galactic import GalacticProperties 
+# from galactic import GalacticProperties 
 
 from dataclasses import dataclass, field, InitVar 
 from typing import Type, List, Optional, Tuple, Union, ClassVar

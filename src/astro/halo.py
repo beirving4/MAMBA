@@ -10,17 +10,15 @@ import numpy as np, ytree
 import numpy.typing as npt 
 from copy import copy
 
-# from constants import *
-# from population import *
 
 from black_hole import BlackHole 
 from objects import AstroObject 
 from virial import VirialProperties 
-from stellar_props import StellarProperties
-from cooling import CoolingModel 
-from history import HaloHistory 
-from galactic import GalacticProperties 
-from seed import SeedingModel 
+from cosmological import getCosmology, Cosmology 
+from halo_props.stellar.stellar_props import StellarProperties
+from halo_props.stellar.cooling import CoolingModel 
+from halo_props.stellar.galactic import GalacticProperties 
+from halo_props.seeding.seed import SeedingModel 
 from contribute import Contributions 
 
 from pympler import asizeof 
@@ -32,12 +30,6 @@ from typing import Type, List, Optional, Tuple, Union, ClassVar
 
 treeNode = Type[ytree.data_structures.tree_node.TreeNode]
 
-# Halo Growth Contributions 
-@dataclass
-class HaloContributions(Contributions):
-
-    def transferContributions(self, otherHalo : Halo) -> None: 
-        super().transferContributions(otherHalo)
 
 # Moving mass min, peakHalo, mass_min to Universe class 
 # Have neighbors return the class object and store the link if possible
@@ -49,6 +41,7 @@ class Halo(AstroObject):
     scale_factor: float = field(init=False)
 
     # Class Variables (These may have to be default_factory)
+    # cosmo: ClassVar[Cosmology] = field(default=getCosmology("Planck18")) 
     virial: ClassVar[VirialProperties] = field(default=VirialProperties)
     galaxy: ClassVar[GalacticProperties] = field(default=GalacticProperties)
     stellar: ClassVar[StellarProperties] = field(default=StellarProperties)
@@ -59,7 +52,7 @@ class Halo(AstroObject):
     peak_mass: float = field(default=None) 
 
     # Seeding Statistics & History 
-    history: HaloHistory = field(default_factory=HaloHistory)
+    hasSeeded: bool = field(default=False)
 
     # Initialize Halo w/ No Black Hole 
     BlackHole: Type[BlackHole] = field(default=None) 
@@ -70,7 +63,7 @@ class Halo(AstroObject):
         self.populationBH = {"Host": self.BlackHole, "Bounded": [], "Wandering": []}
 
         # Set Virial Properties 
-        self.virial(self.mass, self.redshift) 
+        self.virial = VirialProperties(self.mass, self.redshift) 
 
         # Set Galactic Properties 
         self.galaxy(self.mass)
@@ -85,7 +78,16 @@ class Halo(AstroObject):
     def massRatio(self, otherHalo: Halo) -> float:
         return super().massRatio(otherHalo)
 
-    # Indicate if Major Merger Occured 
+    # Transfer Mass Contributions 
+    def transferContributions(self, otherHalo: Halo) -> None: 
+        super().transferContributions(otherHalo)
+
+    # Transfer History 
+    def transferHistory(self, otherHalo: Halo) -> None:
+        super().transferHistory(otherHalo)
+        self.hasSeeded = copy(otherHalo.hasSeeded)
+
+    # Indicate if Major Merger Occurred 
     @property 
     def isMajorMerger(self, otherHalo: Halo) -> bool: 
         return True if (self.massRatio(otherHalo) >= 0.1) else False
@@ -97,7 +99,7 @@ class Halo(AstroObject):
             1. Heavy Seeds - Rare, High Mass Seeds According to (Natarajan, 2006)
             2. Medium Seed - Seeds from Runaway Collisions in NSCs
             3. Light Seeds - Look into IMF for low mass Pop III (Stacy, et. al. 2016 ??)
-            ---> Also try M.Latif, 2021
+            ---> Also try M.Latif, 2021 or Priya's (2020) IMBH formation project
 
         Update so that BH is initialized in the function or nothing happens at all
         """
@@ -147,5 +149,7 @@ class Halo(AstroObject):
 
 
 if __name__ == "__main__": 
-    pass 
+    VirialProperties.cosmo = getCosmology("Planck18")
+    halo1 = Halo(2.0E14, 1)
+    print(halo1)
     # M0vals = np.array([12.035, 12.081, 11.896, 12.021, 12.069, 12.054])

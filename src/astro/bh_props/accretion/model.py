@@ -9,13 +9,13 @@ import numpy.typing as npt
 
 from scipy.stats import rv_continuous
 
-from steady import SteadyModeAccretion
-from triggered import MergerTriggeredAccretion 
+from .steady import SteadyModeAccretion
+from .triggered import MergerTriggeredAccretion 
 
-from copy import copy
-from constants import *
-from population import *
-from halo import *
+# from copy import copy
+# # from constants import *
+# from population import *
+# from halo import *
 
 # Type Hinting Help for Debugging 
 from typing import Type, List, Optional, Tuple, Union
@@ -60,34 +60,34 @@ class AccretionModel:
 
 
 # Trinity Eddington Ratio Distribution 
-class TrinityEddington(rv_continuous, AccretionModel, prefix="trinity"):
-    def _pdf(self, eta: float, massBH: float, z: float):
-        Mc, w = 7.827, 0.739
-        f20, f2a = 0.308, 0.697 
-        P0, eta0 = ...  # Normaliztion constants ... 
-        c10, c1a = -0.071, 0.796 
-        c20, c2a = 1.398, 0.126
+# class TrinityEddington(rv_continuous, AccretionModel, prefix="trinity"):
+#     def _pdf(self, eta: float, massBH: float, z: float):
+#         Mc, w = 7.827, 0.739
+#         f20, f2a = 0.308, 0.697 
+#         P0, eta0 = ...  # Normaliztion constants ... 
+#         c10, c1a = -0.071, 0.796 
+#         c20, c2a = 1.398, 0.126
 
-        x = (np.log10(massBH) - Mc)/w
+#         x = (np.log10(massBH) - Mc)/w
 
-        a = 1.0/(1.0 + z)
-        f1 = np.exp(x)/(1.0 + np.exp(x))
-        f2 = f20 + f2a * (a - 1.0)
-        f_duty = f1 * f2 
+#         a = 1.0/(1.0 + z)
+#         f1 = np.exp(x)/(1.0 + np.exp(x))
+#         f2 = f20 + f2a * (a - 1.0)
+#         f_duty = f1 * f2 
 
-        c1 = c10 + c1a * (a - 1.0)
-        c2 = c20 + c2a * (a - 1.0)
-        pdf = (P0 * f_duty)/((eta/eta0)**c1 + (eta/eta0)**c2) + (1.0 + f_duty) 
+#         c1 = c10 + c1a * (a - 1.0)
+#         c2 = c20 + c2a * (a - 1.0)
+#         pdf = (P0 * f_duty)/((eta/eta0)**c1 + (eta/eta0)**c2) + (1.0 + f_duty) 
 
-        # Need to multiply the Dirac delta around eta == 0 on last term 
+#         # Need to multiply the Dirac delta around eta == 0 on last term 
     
-        return super()._pdf(x, *args)
+#         return super()._pdf(x, *args)
 
-    def random_state(self):
-        return super().random_state
+#     def random_state(self):
+#         return super().random_state
     
-    def _cdf(self, x, *args):
-        return super()._cdf(x, *args)
+#     def _cdf(self, x, *args):
+#         return super()._cdf(x, *args)
 
 
 # if __name__ == "__main__": 

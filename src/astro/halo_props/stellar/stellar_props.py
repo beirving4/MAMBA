@@ -1,13 +1,9 @@
 from dataclasses import dataclass, field, InitVar
-from constants import *
 
 import numpy as np
-
+import astropy.constants as const 
 # Type Hinting Help for Debugging 
 # from typing import Type, List, Optional, Tuple, Union, Dict, ClassVar
-
-import ytree
-
 
 # Class to hold stellar properties for Halo 
 # UMRelations and Gas Properties from Hydro Sim
@@ -38,6 +34,8 @@ class StellarProperties:
         f_vir = (self.stellarMass/M_vir) * ((r_vir/Re)/((r_vir/Re) + (1.0/hernquistR)))**2
         f = f_vir * stellarProfile(Re)/dmProfile(Re) 
 
-        potential = G_Newton * (1.0E-6 * M_solar/kiloparsec)
+        # potential = G_Newton * (1.0E-6 * M_solar/kiloparsec)
+        potential = ((const.GM_sun * self.mass) / (Re * const.kpc))
 
-        return 0.389 * np.sqrt((potential * self.stellarMass/Re) * (oneFej + 0.86/f))
+        # Return the Stellar Velocity Dispersion in km/s 
+        return (0.389 * np.sqrt(potential * (oneFej + 0.86/f))).to("km/s").value 

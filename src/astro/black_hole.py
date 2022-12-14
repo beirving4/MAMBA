@@ -4,31 +4,26 @@ from __future__ import annotations
 # Import Libraries 
 import pdb
 import numpy as np
-import numpy.typing as npt 
+import numpy.typing as npt
+import astropy.constants as const 
 from copy import copy
-from constants import *
 from contribute import Contributions
 # from population import *
 
-
-# from halo import *
 from objects import AstroObject
-from accretion import AccretionModel  
-from history import BlackHoleHistory 
-from luminous import QuasarLuminosities 
+from bh_props.accretion.model import AccretionModel  
+from history import ObjectHistory 
+from bh_props.luminous.luminous import QuasarLuminosities 
 
 from dataclasses import dataclass, field 
 
 # Type Hinting Help for Debugging 
 from typing import Type, List, Optional, Tuple, Union, ClassVar
 
-# Black Hole Contributions 
-@dataclass
-class BlackHoleContributions(Contributions):
 
-    def transferContributions(self, otherBH : BlackHole) -> None: 
-        super().transferContributions(otherBH)
-
+# Necessary Constants 
+t_eddington = ((const.sigma_T * const.c) / (4.0 * np.pi * const.G * const.m_p))
+t_eddington_Myr: float = t_eddington.to("Myr").value
 
 # Generate Class for Black Hole Phenomena 
 @dataclass(order=True, repr=False) # will add slots=True after Python 3.10 upgrade 
@@ -45,15 +40,12 @@ class BlackHole(AstroObject):
     # Associated Accretion Model 
     accretion: ClassVar[AccretionModel] = field(default=AccretionModel) 
 
-    # For Monitoring the Mass Contributions During Evolution
-    # May need to be a default_factory 
-    gains: BlackHoleContributions = field(default_factory=BlackHoleContributions)
-
     # Seeding Statistics & History 
-    history: BlackHoleHistory = field(default_factory=BlackHoleHistory)
+    history: ObjectHistory = field(default_factory=ObjectHistory)
 
     # Observational Luminosity 
-    luminosity: QuasarLuminosities = field(default_factory=QuasarLuminosities)
+    luminosity: QuasarLuminosities = field(init=False)
+    # luminosity: QuasarLuminosities = field(default_factory=QuasarLuminosities)
 
     # Merger Probability
     merger_probability: float = field(default=0.1) 
@@ -82,41 +74,25 @@ class BlackHole(AstroObject):
         # Initialize Tracking of Halo History 
         self.history.updateHistory(self.hostHalo)
 
+    # Mass Ratio 
+    def massRatio(self, otherBH: BlackHole) -> float:
+        return super().massRatio(otherBH)
 
-    # Representer 
-    def __repr__(self) -> str:
-        return f"Black Hole(M = {self.mass:.3e} Msol, spin = {self.spin:.3f}, z = {self.redshift:.3f})"
+    # Transfer Mass Contributions 
+    def transferContributions(self, otherBH: BlackHole) -> None: 
+        super().transferContributions(otherBH)
 
+    # Transfer History 
+    def transferHistory(self, otherBH: BlackHole) -> None:
+        super().transferHistory(otherBH)
 
     # Transfer Mass Conrtributions 
     def transferInfo(self, otherBH: BlackHole) -> None:
         # Transfer Mass Contribution Info 
-        self.gains.transferContributions(otherBH)
+        self.transferContributions(BlackHole)
         
         # Transfer Historical Information 
-        self.history.transferHistory(otherBH)
-
-
-    # Black Hole Growth CDFs 
-    @property
-    def cumulativeContributions(self) -> npt.NDArray[float]: 
-        """
-        Order: 
-            1. Mass Contributions from Black Hole Merger 
-            2. Mass Contributions from Merger-Triggered Accretion 
-            3. Mass Contributions from Steady-Mode Accretion
-            4. Total Accretion Mass Contributions 
-            5. Total Merger Effects Contributions 
-
-            --> Normalized by the Total Growth 
-        """
-        
-        contributions = np.array([self.fromBHMerger, self.fromMergerTriggeredAccretion, 
-                                  self.fromSteadyModeAccretion, self.fromAccretion,
-                                  self.fromMergerEffects])/self.totalGrowth 
-
-
-        return contributions 
+        self.transferHistory(otherBH)
 
     # Update Eddington Rate 
     def updateEddingtonRate(self) -> None:
@@ -269,4 +245,8 @@ class BlackHole(AstroObject):
 
 
 # Test Functionality 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    SgA = BlackHole(4.0E6)
+    print(SgA)
+    print(SgA.history)
+
